@@ -4,7 +4,7 @@ import org.apache.commons.httpclient.util.DateUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,16 +16,16 @@ import java.util.List;
  */
 public class BootResource {
 
-    public static String baseDir = "/Users/zhangsl/Work/hp_modules/manage/src/main/java/";
-    public static String encoding = StandardCharsets.UTF_8.displayName();
-    public static String result = "\t import com.hpkj.common.result.ApiResult;\r\n";
+    public static String baseDir = "/Users/power/工作/hbkj/jiudandan/src/main/java/";
+    public static String encoding = "UTF-8";
+    public static String result = "import com.hpkj.common.result.ApiResult;\r\n";
 
     public static void main(String[] args) {
-        String path = "com/hpkj/manager";
+        String path = "com/hpkj/jiudandan";
         List<String> classes = new ArrayList<String>();
-        classes.add("Field");
-//        create(path, classes);
-        delete(path, classes);
+        classes.add("WineOrder");
+        create(path, classes);
+       // delete(path, classes);
     }
 
     public static void create(String path, List<String> classes) {
@@ -34,9 +34,9 @@ public class BootResource {
             file.mkdir();
         }
 
-        createRepository(path, classes);
+//        createRepository(path, classes);
         createService(path, classes);
-        createServiceImpl(path, classes);
+//        createServiceImpl(path, classes);
     }
 
 
