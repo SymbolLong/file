@@ -4,6 +4,7 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.krysalis.barcode4j.HumanReadablePlacement;
@@ -62,19 +63,19 @@ public class BarcodeUtil {
         try {
             // 生成二维码
             Map<EncodeHintType, Object> hints = new HashMap<EncodeHintType, Object>();
-            hints.put(EncodeHintType.MARGIN, 1);
-            QRCodeWriterAB qrCodeWriter = new QRCodeWriterAB();
+//            hints.put(EncodeHintType.MARGIN, 1);
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
             BitMatrix bitMatrix = qrCodeWriter.encode("http://image.jiudandan.com/mp?uuid=" + uuid + "&num=" + num, BarcodeFormat.QR_CODE, width, width, hints);
-            String tmp = "/Users/power/Downloads/tmp/" + uuid + ".png";
+            String tmp = "/Users/zhangsl/Downloads/tmp/" + uuid + "-" + num + ".png";
             Path path = FileSystems.getDefault().getPath(tmp);
             MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
             // 二维码有问题，中转 输出图片
-            String filePath = "/Users/power/Downloads/tmp/" + uuid + "-" + num + ".png";
-            BufferedImage background = resizeImagePng(75, 75, ImageIO.read(new File(tmp)));
-            background = transparentImage(background, 10);
-            ImageIO.write(background, "png", new File(filePath));
+//            String filePath = "/Users/zhangsl/Downloads/tmp/" + uuid + "-" + num + ".png";
+//            BufferedImage background = resizeImagePng(400, 400, ImageIO.read(new File(tmp)));
+//            background = transparentImage(background, 10);
+//            ImageIO.write(background, "png", new File(filePath));
             //添加红色框
-            overlapImage(filePath, "/Users/power/Downloads/fg.png", uuid, num, width);
+            overlapImage(tmp, "/Users/zhangsl/Downloads/fg.png", uuid, num, width);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -85,17 +86,18 @@ public class BarcodeUtil {
             //设置图片大小
             BufferedImage background = resizeImagePng(width, width, ImageIO.read(new File(bgPath)));
             BufferedImage frontgroud = resizeImagePng(width, width, ImageIO.read(new File(fgPath)));
-
+            System.out.println(bgPath);
+            System.out.println(fgPath);
             //在背景图片中添加入需要写入的信息，
             Graphics2D g = background.createGraphics();
             //写入字符
-            AttributedString as = new AttributedString(uuid);
-            int length = uuid.length();
-            g.setColor(Color.red);
-            Font font = new Font("行楷-简", Font.PLAIN, 30);
-            as.addAttribute(TextAttribute.FONT, font, 0, length);
+//            AttributedString as = new AttributedString(uuid);
+//            int length = uuid.length();
+//            g.setColor(Color.red);
+//            Font font = new Font("行楷-简", Font.PLAIN, 30);
+//            as.addAttribute(TextAttribute.FONT, font, 0, length);
 //            g.drawString(as.getIterator(), 25, 73);
-            g.drawString(as.getIterator(), 120, 395);
+//            g.drawString(as.getIterator(), 120, 395);
             //设置为透明覆盖
             g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 1.0f));
             //在背景图片上相框
@@ -103,7 +105,11 @@ public class BarcodeUtil {
 
             g.dispose();
             //输出图片
-            ImageIO.write(background, "png", new File("/Users/power/Downloads/qrcode/" + uuid + "-" + num + ".png"));
+            if (num == "0") {
+                ImageIO.write(background, "png", new File("/Users/zhangsl/Downloads/left/" + uuid + ".png"));
+            } else {
+                ImageIO.write(background, "png", new File("/Users/zhangsl/Downloads/right/" + uuid + ".png"));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -172,12 +178,20 @@ public class BarcodeUtil {
     }
 
     public static void main(String[] args) {
-        String uuid = "LQ0DFJH9";
-        String num = "0";
-        getQrCode(uuid, num, 400);
-//        String filePath = "/Users/power/Downloads/tmp/" + uuid + "-" + num + ".png";
-//        overlapImage(filePath, "/Users/power/Downloads/fg.png", uuid, num);
-
+        try {
+            File file = new File("/Users/zhangsl/Downloads/7.txt");
+            LineIterator iterator = FileUtils.lineIterator(file);
+            int i = 0;
+            while (iterator.hasNext()) {
+                System.out.println("正在处理：" + ++i);
+                String[] text = iterator.nextLine().split("\t");
+                String uuid = text[0];
+                String num = "1";
+                getQrCode(uuid, num, 400);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

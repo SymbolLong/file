@@ -5,6 +5,8 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.google.zxing.qrcode.encoder.ByteMatrix;
 import com.google.zxing.qrcode.encoder.Encoder;
 import com.google.zxing.qrcode.encoder.QRCode;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 
 import javax.imageio.*;
 import javax.imageio.metadata.IIOInvalidTreeException;
@@ -27,10 +29,25 @@ import java.util.Map;
 public class QRCodeUtil {
 
     public static void main(String[] args) {
-        getQrCode("http://image.jiudandan.com/mp?uuid=LQ0DFJH9&num=0", 449, 118);
+        try {
+            File file = new File("/Users/power/Downloads/3500.txt");
+            LineIterator iterator = FileUtils.lineIterator(file);
+            int i = 0;
+            while (iterator.hasNext()) {
+                System.out.println("正在处理：" + ++i);
+                String[] text = iterator.nextLine().split("\t");
+                String uuid = text[0];
+//                getQrCode("http://image.jiudandan.com/mp?uuid=" + uuid + "&num=0", uuid, 449, 118);
+                getQrCode("http://image.jiudandan.com/mp?uuid=" + uuid + "&num=0", uuid, 400, 0);
+                break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
-    public static void getQrCode(String contents, int size, int margin) {
+    public static void getQrCode(String contents, String uuid, int size, int margin) {
         try {
 
             // 画笔
@@ -63,7 +80,6 @@ public class QRCodeUtil {
                 }
             }
             // 写入文字
-            String uuid = "LQ0DFJH9 ";
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_DEFAULT);
             AttributedString as = new AttributedString(uuid);
@@ -74,7 +90,11 @@ public class QRCodeUtil {
 //            ImageIO.write(bi, "png", new File("/Users/power/Downloads/tmp.png"));
             // 设置输出分辨率
             byte[] bytes = process(bi, 300);
-            bytes2File(bytes, "/Users/power/Downloads", uuid + ".png");
+            if (contents.endsWith("0")) {
+                bytes2File(bytes, "/Users/power/Downloads/left/", uuid + "-0.png");
+            } else {
+                bytes2File(bytes, "/Users/power/Downloads/right/", uuid + "-1.png");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
