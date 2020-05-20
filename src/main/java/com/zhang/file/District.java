@@ -1,27 +1,16 @@
 package com.zhang.file;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import net.sourceforge.pinyin4j.PinyinHelper;
 import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
 import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType;
 import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author zhangsl-877857078@qq.com 2019-04-19 14:33
@@ -29,31 +18,71 @@ import java.util.List;
 public class District {
 
     public static void main(String[] args) {
-//        handleFile("/Users/zhangsl/Downloads/pcd.txt", "/Users/zhangsl/Downloads/pcd2.txt");
-        createSql("/Users/zhangsl/Downloads/pcd2.txt", "/Users/zhangsl/Downloads/pcd.sql");
+        String prefix = "/Users/power/Downloads/";
+        String src = prefix + "district";
+        String mid = prefix + "mid.txt";
+        String tar = prefix + "pcd.txt";
+        String sql = prefix + "district.sql";
+//        filterData(src);
+//        writeFile(src, mid);
+//        handleFile(mid, tar);
+        createSql(tar, sql);
     }
 
-    public static void createSql(String src, String target) {
+    public static void filterData(String src) {
         try {
             File srcFile = new File(src);
-            File targetFile = new File(target);
-            LineIterator lineIterator = FileUtils.lineIterator(srcFile);
-            while (lineIterator.hasNext()) {
-                String line = lineIterator.next();
-                String[] array = line.split("\t");
-                StringBuffer stringBuffer = new StringBuffer("INSERT INTO `District`(`code`, `name`, `codes`, `names`, `parent`, `level`, `pinyin`, `jianpin`, `initial`, `longitude`, `latitude`) VALUES (");
-                for (int i = 0; i < array.length; i++) {
-                    if (i == 5) {
-                        stringBuffer.append(array[i]);
-                    } else {
-                        stringBuffer.append("'" + array[i] + "'");
+            File[] provinces = srcFile.listFiles();
+            for (File province : provinces) {
+                if (province.getName().equals(".DS_Store")) {
+                    province.deleteOnExit();
+                    continue;
+                }
+                System.out.println(province.getName());
+                File[] districts = province.listFiles();
+                for (File file : districts) {
+                    if (file.getName().equals(".DS_Store")) {
+                        file.deleteOnExit();
+                        continue;
                     }
-                    if (i != array.length - 1){
-                        stringBuffer.append(",");
+                    JSONObject json = readJson(file);
+                    if (json == null || json.keySet().size() == 1) {
+                        System.out.println(json.getString("html"));
                     }
                 }
-                stringBuffer.append(");\r\n");
-                FileUtils.write(targetFile, stringBuffer.toString(), "UTF-8", true);
+                Thread.sleep(3000);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void writeFile(String src, String target) {
+        try {
+            Map<String, String> map = new HashMap<String, String>();
+            List<String> codes = new ArrayList<String>();
+            File srcFile = new File(src);
+            File[] provinces = srcFile.listFiles();
+            for (File province : provinces) {
+                System.out.println(province.getName());
+                File[] districts = province.listFiles();
+                for (File file : districts) {
+                    JSONObject json = readJson(file);
+                    for (Map.Entry<String, Object> entry : json.entrySet()) {
+                        if (!entry.getKey().equals("html")) {
+                            codes.add(entry.getKey());
+                            map.put(entry.getKey(), entry.getValue().toString());
+                        }
+                    }
+                }
+                Thread.sleep(3000);
+            }
+            File tarFile = new File(target);
+            Collections.sort(codes);
+            for (String code : codes) {
+                String data = code + "\t" + map.get(code) + "\r\n";
+                FileUtils.write(tarFile, data, "UTF-8", true);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -62,10 +91,10 @@ public class District {
 
     public static void handleFile(String src, String target) {
         try {
-            String title = "code\tname\tcodes\tnames\tparent\tpinyin\tjianpin\tinitial\tlng\tlat";
+            String title = "level\tcode\tname\tcodes\tnames\tparent\tinitial\r\n";
             File srcFile = new File(src);
             File targetFile = new File(target);
-            FileUtils.write(targetFile, title, "UTF-8", true);
+//不写入title            FileUtils.write(targetFile, title, "UTF-8", true);
             LineIterator lineIterator = FileUtils.lineIterator(srcFile);
             String provinceCode = null;
             String provinceName = "";
@@ -77,41 +106,99 @@ public class District {
                 String[] array = line.split("\t");
                 String code = array[0];
                 String name = array[1];
-
-                JSONObject baidu = new JSONObject();
+                if (!code.endsWith("000000")) {
+                    // 仅保留省市区
+                    continue;
+                }
+                code = code.substring(0, 6);
+                name = name.replace("�", "X");
+                System.out.println(name);
+                JSONObject baidu;
                 StringBuffer stringBuffer = new StringBuffer();
-                stringBuffer.append(code + "\t");
-                stringBuffer.append(name + "\t");
                 if (code.endsWith("0000")) {
                     provinceCode = code;
                     provinceName = name;
-                    stringBuffer.append("\t");
-                    stringBuffer.append("\t");
-                    stringBuffer.append("\t");
-                    stringBuffer.append("1\t");
+                    stringBuffer.append("1\t");// level
+                    stringBuffer.append(code + "\t");// code
+                    stringBuffer.append(name + "\t"); // name
+                    stringBuffer.append("\t"); // codes
+                    stringBuffer.append("\t");// names
+                    stringBuffer.append("\t");// parent
                     baidu = getBaidu(provinceName);
                 } else if (code.endsWith("00")) {
                     cityCode = code;
                     cityName = name;
-                    stringBuffer.append(provinceCode + "\t");
-                    stringBuffer.append(provinceName + "\t");
-                    stringBuffer.append(provinceCode + "\t");
-                    stringBuffer.append("2\t");
+                    stringBuffer.append("2\t");// level
+                    stringBuffer.append(code + "\t");// code
+                    stringBuffer.append(name + "\t"); // name
+                    stringBuffer.append(provinceCode + "\t"); // codes
+                    stringBuffer.append(provinceName + "\t");// names
+                    stringBuffer.append(provinceCode + "\t");// parent
                     baidu = getBaidu(provinceName + cityName);
                 } else {
-                    stringBuffer.append(provinceCode + "," + cityCode + "\t");
-                    stringBuffer.append(provinceName + "," + cityName + "\t");
-                    stringBuffer.append(cityCode + "\t");
-                    stringBuffer.append("3\t");
+                    stringBuffer.append("3\t");// level
+                    stringBuffer.append(code + "\t");// code
+                    stringBuffer.append(name + "\t"); // name
+                    stringBuffer.append(provinceCode + "," + cityCode + "\t"); // codes
+                    stringBuffer.append(provinceName + "," + cityName + "\t");// names
+                    stringBuffer.append(cityCode + "\t");// parent
                     baidu = getBaidu(provinceName + cityName + name);
                 }
-                stringBuffer.append(toHanyuPinyinString(name) + "\t");
-                stringBuffer.append(getPinYinHeadChar(name) + "\t");
-                stringBuffer.append(getPinYinHeadChar(name).substring(0, 1) + "\t");
+//                stringBuffer.append(toHanyuPinyinString(name) + "\t");// pinyin
+//                stringBuffer.append(getPinYinHeadChar(name) + "\t");// jianpin
+                stringBuffer.append(getPinYinHeadChar(name).substring(0, 1));// initial
 
-                stringBuffer.append(baidu.getString("lng") + "\t");
-                stringBuffer.append(baidu.getString("lat"));
+//                stringBuffer.append(baidu.getString("lng") + "\t");// lng
+//                stringBuffer.append(baidu.getString("lat"));// lat
                 stringBuffer.append("\r\n");
+                FileUtils.write(targetFile, stringBuffer.toString(), "UTF-8", true);
+            }
+            String tw = "1\t71000\t台湾省\t\t\t\tT\r\n";
+            String hk = "1\t810000\t香港特别行政区\t\t\t\tX\r\n";
+            String macao = "1\t820000\t澳门特别行政区\t\t\t\tA";
+            FileUtils.write(targetFile, tw, "UTF-8", true);
+            FileUtils.write(targetFile, hk, "UTF-8", true);
+            FileUtils.write(targetFile, macao, "UTF-8", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static JSONObject readJson(File file) {
+        try {
+            LineIterator lineIterator = FileUtils.lineIterator(file);
+            StringBuffer stringBuffer = new StringBuffer();
+            while (lineIterator.hasNext()) {
+                stringBuffer.append(lineIterator.next());
+            }
+            return JSONObject.parseObject(stringBuffer.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    public static void createSql(String src, String target) {
+        try {
+            File srcFile = new File(src);
+            File targetFile = new File(target);
+            LineIterator lineIterator = FileUtils.lineIterator(srcFile);
+            while (lineIterator.hasNext()) {
+                String line = lineIterator.next();
+                String[] array = line.split("\t");
+                StringBuffer stringBuffer = new StringBuffer("INSERT INTO `District`(`level`, `code`, `name`, `codes`, `names`, `parent`, `initial`) VALUES (");
+                for (int i = 0; i < array.length; i++) {
+                    if (i == 0) {
+                        stringBuffer.append(array[i]);
+                    } else {
+                        stringBuffer.append("'" + array[i] + "'");
+                    }
+                    if (i != array.length - 1) {
+                        stringBuffer.append(",");
+                    }
+                }
+                stringBuffer.append(");\r\n");
                 FileUtils.write(targetFile, stringBuffer.toString(), "UTF-8", true);
             }
         } catch (Exception e) {
@@ -144,6 +231,9 @@ public class District {
             }
             if (input.endsWith("自治区")) {
                 input = input.replace("自治区", "");
+            }
+            if (input.endsWith("经济技术开发区")) {
+                input = input.replace("经济技术开发区", "");
             }
             if (input.endsWith("新区")) {
                 input = input.replace("新区", "");
@@ -228,40 +318,40 @@ public class District {
 
     public static JSONObject getBaidu(String name) {
 
-        HttpClient client = new HttpClient();
-        client.getHttpConnectionManager().getParams().setConnectionTimeout(2000);
-        client.getHttpConnectionManager().getParams().setSoTimeout(2000);
-        String res = null;
-        // Create a method instance.
-        GetMethod method = null;
-        try {
-            Thread.sleep(100);
-            String url = "http://api.map.baidu.com/geocoder/v2/?output=json&ak=74b0639e2dd539200d6b937b9422ea1d&address=" + URLEncoder.encode(name, "UTF-8");
-            method = new GetMethod(url);
-            method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(3, false));
-            method.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, "UTF-8");
-            // Execute the method.
-            int statusCode = client.executeMethod(method);
-            if (statusCode == HttpStatus.SC_OK) {
-                BufferedReader reader;
-                reader = new BufferedReader(new InputStreamReader(method.getResponseBodyAsStream()));
-                StringBuffer stringBuffer = new StringBuffer();
-                String str = "";
-                while ((str = reader.readLine()) != null) {
-                    stringBuffer.append(str);
-                }
-                res = stringBuffer.toString();
-            }
-            System.out.println(name + ": " + res);
-            JSONObject result = JSON.parseObject(res).getJSONObject("result");
-            return result.getJSONObject("location");
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (method != null) {
-                method.releaseConnection();
-            }
-        }
+//        HttpClient client = new HttpClient();
+//        client.getHttpConnectionManager().getParams().setConnectionTimeout(2000);
+//        client.getHttpConnectionManager().getParams().setSoTimeout(2000);
+//        String res = null;
+//        // Create a method instance.
+//        GetMethod method = null;
+//        try {
+//            Thread.sleep(100);
+//            String url = "http://api.map.baidu.com/geocoder/v2/?output=json&ak=74b0639e2dd539200d6b937b9422ea1d&address=" + URLEncoder.encode(name, "UTF-8");
+//            method = new GetMethod(url);
+//            method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, new DefaultHttpMethodRetryHandler(3, false));
+//            method.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, "UTF-8");
+//            // Execute the method.
+//            int statusCode = client.executeMethod(method);
+//            if (statusCode == HttpStatus.SC_OK) {
+//                BufferedReader reader;
+//                reader = new BufferedReader(new InputStreamReader(method.getResponseBodyAsStream()));
+//                StringBuffer stringBuffer = new StringBuffer();
+//                String str = "";
+//                while ((str = reader.readLine()) != null) {
+//                    stringBuffer.append(str);
+//                }
+//                res = stringBuffer.toString();
+//            }
+//            System.out.println(name + ": " + res);
+//            JSONObject result = JSON.parseObject(res).getJSONObject("result");
+//            return result.getJSONObject("location");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        } finally {
+//            if (method != null) {
+//                method.releaseConnection();
+//            }
+//        }
         JSONObject result = new JSONObject();
         result.put("lng", "未知");
         result.put("lat", "未知");

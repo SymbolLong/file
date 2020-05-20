@@ -13,7 +13,6 @@ import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,7 +20,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.text.AttributedString;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,7 +64,7 @@ public class BarcodeUtil {
 //            hints.put(EncodeHintType.MARGIN, 1);
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
             BitMatrix bitMatrix = qrCodeWriter.encode("http://image.jiudandan.com/mp?uuid=" + uuid + "&num=" + num, BarcodeFormat.QR_CODE, width, width, hints);
-            String tmp = "/Users/zhangsl/Downloads/tmp/" + uuid + "-" + num + ".png";
+            String tmp = "/Users/power/Downloads/tmp/" + uuid + "-" + num + ".png";
             Path path = FileSystems.getDefault().getPath(tmp);
             MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
             // 二维码有问题，中转 输出图片
@@ -75,7 +73,7 @@ public class BarcodeUtil {
 //            background = transparentImage(background, 10);
 //            ImageIO.write(background, "png", new File(filePath));
             //添加红色框
-            overlapImage(tmp, "/Users/zhangsl/Downloads/fg.png", uuid, num, width);
+            overlapImage(tmp, "/Users/power/Downloads/fg.png", uuid, num, width);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -106,9 +104,9 @@ public class BarcodeUtil {
             g.dispose();
             //输出图片
             if (num == "0") {
-                ImageIO.write(background, "png", new File("/Users/zhangsl/Downloads/left/" + uuid + ".png"));
+                ImageIO.write(background, "png", new File("/Users/power/Downloads/left/" + uuid + ".jpg"));
             } else {
-                ImageIO.write(background, "png", new File("/Users/zhangsl/Downloads/right/" + uuid + ".png"));
+                ImageIO.write(background, "png", new File("/Users/power/Downloads/right/" + uuid + ".jpg"));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -179,7 +177,7 @@ public class BarcodeUtil {
 
     public static void main(String[] args) {
         try {
-            File file = new File("/Users/zhangsl/Downloads/7.txt");
+            File file = new File("/Users/power/Downloads/9.txt");
             LineIterator iterator = FileUtils.lineIterator(file);
             int i = 0;
             while (iterator.hasNext()) {
