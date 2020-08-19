@@ -16,21 +16,22 @@ public class Archive {
     public static void main(String[] args) {
 
         //1 处理数据11-12
-        String src = "/Users/power/Downloads/aiche/11.txt";
-        String target = "/Users/power/Downloads/aiche/12.txt";
+        String src = "/Users/power/Downloads/aiche/21.txt";
+        String target = "/Users/power/Downloads/aiche/22.txt";
 //        handleData(src, target);
         //2 处理抵扣项目12-13
-        src = "/Users/power/Downloads/aiche/12.txt";
-        target = "/Users/power/Downloads/aiche/13.txt";
+        src = "/Users/power/Downloads/aiche/22.txt";
+        target = "/Users/power/Downloads/aiche/23.txt";
 //        handleDeducts(src, target);
         // 3 处理门店13-14
-        src = "/Users/power/Downloads/aiche/13.txt";
-        target = "/Users/power/Downloads/aiche/14.txt";
-        handleShop(src, target);
+        src = "/Users/power/Downloads/aiche/23.txt";
+        target = "/Users/power/Downloads/aiche/24.txt";
+//        handleShop(src, target);
         // 3 生成sql14-15
-        src = "/Users/power/Downloads/aiche/14.txt";
-        target = "/Users/power/Downloads/aiche/15.sql";
+        src = "/Users/power/Downloads/aiche/24.txt";
+        target = "/Users/power/Downloads/aiche/25.sql";
         generateSQL(src, target);
+
     }
 
     public static void generateSQL(String src, String target) {
@@ -360,7 +361,7 @@ public class Archive {
         try {
             File srcFile = new File(src);
             File targetFile = new File(target);
-            File rubbish = new File("/Users/power/Downloads/aiche/999.txt");
+            File rubbish = new File("/Users/power/Downloads/aiche/9999.txt");
             int count = 0;
             LineIterator lineIterator = FileUtils.lineIterator(srcFile);
             while (lineIterator.hasNext()) {
@@ -395,6 +396,7 @@ public class Archive {
                     }
                     String s = array[i];
                     if (s.contains("/")) {
+                        s = s.replace(" 0:00", "");
                         String[] dates = s.split("/");
                         String string = "20" + dates[2] + "-" + dates[0] + "-" + dates[1];
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
