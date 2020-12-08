@@ -4,49 +4,71 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class DeviceNum {
-    public static void main(String[] args) {
+    public static void main3(String[] args) {
         try {
-            int size = 0;
-            Map<String, String> map1 = new HashMap<>(size);
-            LineIterator lineIterator = FileUtils.lineIterator(new File("/Users/zhangsl/Downloads/2000.txt"));
-            while (lineIterator.hasNext()){
-                String line = lineIterator.next().trim();
-                map1.put(line, line);
-            }
-            Map<String, String> map = new HashMap<>(size);
+            int size = 10;
+            Set<String> set = new HashSet<String>(size);
             int i = 0;
-            int j = 0;
             while (i < size) {
-                String uuid = random();
-                if (map1.containsKey(uuid)){
-                    System.out.println("2000已存在");
+                String uuid = random2();
+                if (set.contains(uuid)) {
                     continue;
                 }
-                if (map.containsKey(uuid)) {
-                    j++;
-                    System.out.println("第"+j+"次重复");
-                    continue;
-                } else {
-                    map.put(uuid, uuid);
-                    i++;
-                }
+                set.add(uuid);
+                i++;
             }
-            File file = new File("/Users/zhangsl/Downloads/500.txt");
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                FileUtils.write(file, entry.getKey()+"\r\n", "utf-8", true);
+            File file = new File("/Users/zhangsl/Downloads/test.txt");
+            for (String uuid : set) {
+                FileUtils.write(file, uuid + "\r\n", "utf-8", true);
             }
-        }catch (Exception e){
-           e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
     }
 
-    private static String random() {
+    private static String random2() {
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+        String src = "1234567890ACDEFGHJKMNPQRSTWXY";
+        for (int i = 0; i < 10; ++i) {
+            int number = random.nextInt(src.length());
+            sb.append(src.charAt(number));
+        }
+        return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        try {
+            int size = 8000;
+            File file = new File("/Users/power/Downloads/" + size + ".txt");
+            if (!file.exists()){
+                file.createNewFile();
+            }
+            Set<String> list = new HashSet<String>(size);
+            LineIterator lineIterator = FileUtils.lineIterator(file);
+            while (lineIterator.hasNext()) {
+                String line = lineIterator.next().trim();
+                list.add(line);
+            }
+            while (list.size() < size) {
+                String uuid = random("B");
+                if (list.contains(uuid)) {
+                    System.out.println(uuid + "已存在");
+                    continue;
+                } else {
+                    list.add(uuid);
+                    FileUtils.write(file, uuid + "\r\n", "utf-8", true);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static String random(String prefix) {
         Random random = new Random();
         StringBuffer sb = new StringBuffer();
         String src = "1234567890";
@@ -54,6 +76,6 @@ public class DeviceNum {
             int number = random.nextInt(src.length());
             sb.append(src.charAt(number));
         }
-        return "A" + sb.toString();
+        return prefix + sb.toString();
     }
 }

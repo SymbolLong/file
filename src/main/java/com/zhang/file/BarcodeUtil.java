@@ -84,8 +84,6 @@ public class BarcodeUtil {
             //设置图片大小
             BufferedImage background = resizeImagePng(width, width, ImageIO.read(new File(bgPath)));
             BufferedImage frontgroud = resizeImagePng(width, width, ImageIO.read(new File(fgPath)));
-            System.out.println(bgPath);
-            System.out.println(fgPath);
             //在背景图片中添加入需要写入的信息，
             Graphics2D g = background.createGraphics();
             //写入字符
@@ -182,10 +180,10 @@ public class BarcodeUtil {
             LineIterator iterator = FileUtils.lineIterator(file);
             int i = 0;
             while (iterator.hasNext()) {
-                System.out.println("正在处理：" + ++i);
                 String[] text = iterator.nextLine().split("\t");
                 String uuid = text[0];
-                String num = "0";
+                System.out.println("正在处理：" + ++i + "--"+uuid);
+                String num = "1";
                 getQrCode(uuid, num, 400);
             }
         } catch (Exception e) {
