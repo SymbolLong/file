@@ -38,8 +38,8 @@ public class BarcodeUtil {
             //选择条形码类型(好多类型可供选择)
             Code128Bean bean = new Code128Bean();
             //设置长宽
-            final double moduleWidth = 0.2;
-            final int resolution = 300;
+            final double moduleWidth = 0.4;
+            final int resolution = 900;
             bean.setMsgPosition(HumanReadablePlacement.HRP_BOTTOM);
             bean.setModuleWidth(moduleWidth);
             bean.doQuietZone(true);
@@ -64,7 +64,7 @@ public class BarcodeUtil {
 //            hints.put(EncodeHintType.MARGIN, 1);
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
             BitMatrix bitMatrix = qrCodeWriter.encode("http://image.jiudandan.com/mp?uuid=" + uuid + "&num=" + num, BarcodeFormat.QR_CODE, width, width, hints);
-            String tmp = "/Users/power/Downloads/tmp/" + uuid + "-" + num + ".png";
+            String tmp = "/Users/zhangsl/Downloads/tmp/" + uuid + "-" + num + ".png";
             Path path = FileSystems.getDefault().getPath(tmp);
             MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
             // 二维码有问题，中转 输出图片
@@ -73,7 +73,7 @@ public class BarcodeUtil {
 //            background = transparentImage(background, 10);
 //            ImageIO.write(background, "png", new File(filePath));
             //添加红色框
-            overlapImage(tmp, "/Users/power/Downloads/fg.png", uuid, num, width);
+            overlapImage(tmp, "/Users/zhangsl/Downloads/fg.png", uuid, num, width);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -104,9 +104,9 @@ public class BarcodeUtil {
             g.dispose();
             //输出图片
             if (num == "0") {
-                ImageIO.write(background, "png", new File("/Users/power/Downloads/left/" + uuid + ".jpg"));
+                ImageIO.write(background, "png", new File("/Users/zhangsl/Downloads/left/" + uuid + ".png"));
             } else {
-                ImageIO.write(background, "png", new File("/Users/power/Downloads/right/" + uuid + ".jpg"));
+                ImageIO.write(background, "png", new File("/Users/zhangsl/Downloads/right/" + uuid + ".png"));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -150,23 +150,24 @@ public class BarcodeUtil {
         return bufferedImage;
     }
 
-    public static void mainBar(String[] args) {
+    public static void main(String[] args) {
         try {
             List<String> ids = new ArrayList<String>();
-            File hundred = new File("/Users/power/Downloads/5000/5000.txt");
-            LineIterator iterator = FileUtils.lineIterator(hundred);
-            while (iterator.hasNext()) {
-                String id = iterator.nextLine();
-                if (id.length() == 15) {
-                    ids.add(id);
-                }
-            }
+            ids.add("692071847994");
+//            File hundred = new File("/Users/zhangsl/Downloads/5000/5000.txt");
+//            LineIterator iterator = FileUtils.lineIterator(hundred);
+//            while (iterator.hasNext()) {
+//                String id = iterator.nextLine();
+//                if (id.length() == 15) {
+//                    ids.add(id);
+//                }
+//            }
             int i = 1;
             for (String id : ids) {
                 System.out.println("-------------------");
                 System.out.println(i + "正在处理:" + id);
                 i++;
-                String path = "/Users/power/Downloads/5000/barcode/" + id + ".png";
+                String path = "/Users/zhangsl/Downloads/" + id + ".png";
                 BarcodeUtil.getBarCode(id, path);
             }
         } catch (Exception e) {
@@ -175,16 +176,16 @@ public class BarcodeUtil {
 
     }
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
         try {
-            File file = new File("/Users/power/Downloads/9.txt");
+            File file = new File("/Users/zhangsl/Downloads/2500.txt");
             LineIterator iterator = FileUtils.lineIterator(file);
             int i = 0;
             while (iterator.hasNext()) {
                 System.out.println("正在处理：" + ++i);
                 String[] text = iterator.nextLine().split("\t");
                 String uuid = text[0];
-                String num = "1";
+                String num = "0";
                 getQrCode(uuid, num, 400);
             }
         } catch (Exception e) {
